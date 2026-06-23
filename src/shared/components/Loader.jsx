@@ -22,7 +22,7 @@ const FullPageLoader = ({ message = 'Loading...' }) => {
         <div className="absolute h-24 w-24 rounded-full bg-indigo-500/5 blur-xl animate-pulse" />
         <Spinner size="lg" />
       </div>
-      <p className="text-slate-600 text-xs font-bold tracking-wider uppercase animate-pulse">
+      <p className="text-slate-600 text-xs font-bold tracking-wider uppercase animate-pulse text-center px-6 max-w-sm md:max-w-md leading-relaxed">
         {message}
       </p>
     </div>

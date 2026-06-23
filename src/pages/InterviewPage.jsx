@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInterviewStore } from '../store/interviewStore.js';
+import { ROUTES } from '../shared/constants/routes.js';
 import Button from '../shared/components/Button.jsx';
 import Card from '../shared/components/Card.jsx';
 import Modal from '../shared/components/Modal.jsx';
@@ -74,7 +75,12 @@ const InterviewPage = () => {
   
   // Audio Playback & Capture states
   const [isMuted, setIsMuted] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [isListening, setIsListeningState] = useState(false);
+  const isListeningRef = useRef(false);
+  const setIsListening = (val) => {
+    setIsListeningState(val);
+    isListeningRef.current = val;
+  };
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   
   // Timer states
@@ -179,6 +185,7 @@ const InterviewPage = () => {
       rec.lang = 'en-US';
 
       rec.onresult = (event) => {
+        if (!isListeningRef.current) return;
         let speechText = '';
         for (let i = 0; i < event.results.length; ++i) {
           speechText += event.results[i][0].transcript;
@@ -217,7 +224,7 @@ const InterviewPage = () => {
     utterance.onstart = () => {
       setIsAISpeaking(true);
       // Auto turn off microphone if user is speaking
-      if (isListening && recognitionRef.current) {
+      if (isListeningRef.current && recognitionRef.current) {
         recognitionRef.current.stop();
         setIsListening(false);
       }
@@ -249,7 +256,7 @@ const InterviewPage = () => {
       return;
     }
 
-    if (isListening) {
+    if (isListeningRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
@@ -274,7 +281,7 @@ const InterviewPage = () => {
     if (!messageText.trim() || messageLoading) return;
 
     // Stop microphone if it is active
-    if (isListening && recognitionRef.current) {
+    if (isListeningRef.current && recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
     }
@@ -290,7 +297,7 @@ const InterviewPage = () => {
     if (!activeInterview) return;
     
     // Pause STT/TTS while modal is open
-    if (isListening && recognitionRef.current) {
+    if (isListeningRef.current && recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
     }
@@ -317,7 +324,7 @@ const InterviewPage = () => {
   const handleAutoEnd = () => {
     if (!activeInterview) return;
     
-    if (isListening && recognitionRef.current) {
+    if (isListeningRef.current && recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
     }
@@ -356,10 +363,55 @@ const InterviewPage = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-8.5rem)] min-h-[500px]">
+    <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6 h-[calc(100vh-7rem)] lg:h-[calc(100vh-8.5rem)]">
       
+      {/* Mobile Header (only visible on screens below lg) */}
+      <div className="lg:hidden flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-sm shrink-0">
+        <div className="flex items-center gap-2">
+          <Timer className="h-5 w-5 text-indigo-650 animate-pulse" />
+          <div>
+            <span className="text-[10px] text-slate-500 font-bold uppercase block tracking-wider leading-none">Time Left</span>
+            <span className="text-sm font-bold font-mono text-slate-800">
+              {formatTime(secondsRemaining)}
+            </span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* TTS Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const newMuted = !isMuted;
+              setIsMuted(newMuted);
+              if (newMuted && typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+              }
+            }}
+            className={`p-2 rounded-lg border transition-all ${
+              !isMuted
+                ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                : 'bg-slate-50 border-slate-200 text-slate-500'
+            }`}
+            title={isMuted ? 'Turn on AI Voice' : 'Turn off AI Voice'}
+          >
+            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+
+          {/* End Session Button */}
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleEndInterview}
+            icon={LogOut}
+          >
+            End
+          </Button>
+        </div>
+      </div>
+
       {/* Left panel - Status & Controls */}
-      <div className="lg:col-span-1 flex flex-col gap-4 h-full">
+      <div className="hidden lg:flex lg:col-span-1 flex-col gap-4 h-full">
         {/* Info Card */}
         <Card title="Interview Room" className="shrink-0 border-slate-200 shadow-sm">
           <div className="space-y-4">
@@ -452,7 +504,7 @@ const InterviewPage = () => {
       </div>
 
       {/* Right panel - Chat Interface */}
-      <div className="lg:col-span-3 flex flex-col bg-slate-50 rounded-xl border border-slate-200 overflow-hidden h-full">
+      <div className="flex-1 min-h-0 lg:col-span-3 flex flex-col bg-slate-50 rounded-xl border border-slate-200 overflow-hidden lg:h-full">
         {/* Chat Feed */}
         <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4">
           

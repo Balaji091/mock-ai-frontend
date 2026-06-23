@@ -163,20 +163,32 @@ const HistoryPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button
-                          variant={row.status === 'completed' ? 'outline' : 'primary'}
-                          size="sm"
-                          onClick={() => {
-                            if (row.status === 'completed') {
-                              navigate(`/interviews/${row._id}/result`);
-                            } else {
-                              navigate(`/interviews/${row._id}`);
-                            }
-                          }}
-                          icon={row.status === 'completed' ? Trophy : Play}
-                        >
-                          {row.status === 'completed' ? 'Report' : 'Resume'}
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          {row.status === 'completed' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`${ROUTES.CREATE_INTERVIEW}?retake=${row._id}`)}
+                              icon={RotateCcw}
+                            >
+                              Retake
+                            </Button>
+                          )}
+                          <Button
+                            variant={row.status === 'completed' ? 'outline' : 'primary'}
+                            size="sm"
+                            onClick={() => {
+                              if (row.status === 'completed') {
+                                navigate(`/interviews/${row._id}/result`);
+                              } else {
+                                navigate(`/interviews/${row._id}`);
+                              }
+                            }}
+                            icon={row.status === 'completed' ? Trophy : Play}
+                          >
+                            {row.status === 'completed' ? 'Report' : 'Resume'}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -218,20 +230,32 @@ const HistoryPage = () => {
                       <span className="text-[10px] text-slate-500">Progress: Incomplete</span>
                     )}
 
-                    <Button
-                      variant={row.status === 'completed' ? 'outline' : 'primary'}
-                      size="sm"
-                      onClick={() => {
-                        if (row.status === 'completed') {
-                          navigate(`/interviews/${row._id}/result`);
-                        } else {
-                          navigate(`/interviews/${row._id}`);
-                        }
-                      }}
-                      icon={row.status === 'completed' ? Trophy : Play}
-                    >
-                      {row.status === 'completed' ? 'Report' : 'Resume'}
-                    </Button>
+                    <div className="flex gap-2">
+                      {row.status === 'completed' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`${ROUTES.CREATE_INTERVIEW}?retake=${row._id}`)}
+                          icon={RotateCcw}
+                        >
+                          Retake
+                        </Button>
+                      )}
+                      <Button
+                        variant={row.status === 'completed' ? 'outline' : 'primary'}
+                        size="sm"
+                        onClick={() => {
+                          if (row.status === 'completed') {
+                            navigate(`/interviews/${row._id}/result`);
+                          } else {
+                            navigate(`/interviews/${row._id}`);
+                          }
+                        }}
+                        icon={row.status === 'completed' ? Trophy : Play}
+                      >
+                        {row.status === 'completed' ? 'Report' : 'Resume'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}

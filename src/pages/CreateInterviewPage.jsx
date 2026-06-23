@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInterviewStore } from '../store/interviewStore.js';
 import Card from '../shared/components/Card.jsx';
 import Button from '../shared/components/Button.jsx';
@@ -26,8 +26,10 @@ const ROLE_SUGGESTIONS = [
 ];
 
 const CreateInterviewPage = () => {
-  const { createInterview, loading } = useInterviewStore();
+  const { createInterview, fetchInterviewDetails, loading } = useInterviewStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const retakeId = searchParams.get('retake');
 
   const {
     register,
@@ -43,6 +45,20 @@ const CreateInterviewPage = () => {
       duration: 10,
     },
   });
+  
+  useEffect(() => {
+    if (retakeId) {
+      fetchInterviewDetails(retakeId).then((data) => {
+        if (data) {
+          setValue('topic', data.topic, { shouldValidate: true });
+          setValue('role', data.role, { shouldValidate: true });
+          setValue('difficulty', data.difficulty);
+          setValue('interviewType', data.interviewType);
+          setValue('duration', data.duration);
+        }
+      });
+    }
+  }, [retakeId, fetchInterviewDetails, setValue]);
 
   const onSubmit = async (data) => {
     // Parse duration to number
